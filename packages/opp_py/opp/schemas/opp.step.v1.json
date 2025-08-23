@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OPP Step",
+  "type": "object",
+  "properties": {
+    "step": {
+      "type": "string"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "start",
+        "end"
+      ]
+    },
+    "ts": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "attrs": {
+      "type": "object"
+    },
+    "status": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "step",
+    "phase",
+    "ts"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "@context": {
+    "opp": "https://schema.odin.org/opp#",
+    "step": "opp:step",
+    "phase": "opp:phase",
+    "ts": "opp:ts",
+    "attrs": "opp:attrs",
+    "status": "opp:status"
+  }
+}

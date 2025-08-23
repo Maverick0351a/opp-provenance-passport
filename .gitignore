@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Node
+node_modules/
+apps/explorer/.next/
+apps/explorer/.vercel/
+packages/opp_js/dist/
+
+# OS/IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Local env
+.env
