@@ -1,6 +1,9 @@
 # ODIN Provenance Passport (OPP) — Starter
 
-**One‑line:** a turnkey provenance layer that stamps **datasets, prompts, models, and agent runs** with cryptographically verifiable receipts — built on the ODIN OPE protocol.
+[![opp-ci](https://github.com/Maverick0351a/opp-provenance-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/Maverick0351a/opp-provenance-passport/actions)
+[![google-partner](https://img.shields.io/badge/Google%20Cloud-Partner-blue?logo=googlecloud&logoColor=white)](https://cloud.google.com/partners)
+
+**One‑liner:** Turnkey provenance + policy layer that stamps & validates **datasets, prompts, model builds, and agent/tool runs** with chained, signed ODIN OPE receipts, then elevates them into a human + machine readable Model Passport & Policy view.
 
 This starter includes:
 - **opp_py** (Python SDK): decorators (inputs/outputs CIDs) + CLI (graph, validate, passport, policy).
