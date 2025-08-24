@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/packages/opp_py"
+    schedule:
+      interval: "daily"
+    labels: ["chore", "deps"]
+  - package-ecosystem: "pip"
+    directory: "/services/exporter_api"
+    schedule:
+      interval: "daily"
+    labels: ["chore", "deps"]
+  - package-ecosystem: "npm"
+    directory: "/apps/explorer"
+    schedule:
+      interval: "daily"
+    labels: ["chore", "deps"]
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["chore", "deps"]

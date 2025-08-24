@@ -1,0 +1,35 @@
+name: pr-label-check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+
+jobs:
+  ensure-label:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
+    steps:
+      - name: Check required label
+        uses: actions-ecosystem/action-add-labels@v1
+        if: false  # placeholder to ensure action is downloaded (no-op)
+      - name: Enforce category label
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          required_labels="feat fix docs chore refactor perf test ci build"
+          api_url="https://api.github.com/repos/$REPO/issues/$PR_NUMBER/labels"
+          labels=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" $api_url | jq -r '.[].name')
+          found=0
+          for l in $labels; do
+            for r in $required_labels; do
+              if [ "$l" = "$r" ]; then found=1; break 2; fi
+            done
+          done
+          if [ $found -eq 0 ]; then
+            echo "No category label (one of: $required_labels) applied." >&2
+            exit 1
+          fi

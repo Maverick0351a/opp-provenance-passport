@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 import hashlib
-from typing import List
+
 
 def _h(b: bytes) -> bytes:
     return hashlib.sha256(b).digest()
 
-def merkle_root(chunks: List[bytes]) -> str:
+def merkle_root(chunks: list[bytes]) -> str:
     if not chunks:
         return "sha256:" + hashlib.sha256(b"").hexdigest()
     layer = [ _h(c) for c in chunks ]

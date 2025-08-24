@@ -1,22 +1,29 @@
 from __future__ import annotations
-import json, sys
+
+import json
+import sys
+from typing import Any, cast
+
 import httpx
 import typer
-from typing import Optional
+
 from .graph import build_graph_from_bundle, to_passport
 
 app = typer.Typer(help="OPP CLI — provenance graphs, passports, validation")
 
-def _get(url: str) -> dict:
+def _get(url: str) -> dict[str, Any]:
+    """Fetch JSON returning a typed dict."""
     with httpx.Client(timeout=15.0) as client:
         r = client.get(url)
         r.raise_for_status()
-        return r.json()
+        data = r.json()
+        # Ensure mapping type for mypy; httpx returns Any
+        return cast(dict[str, Any], data)
 
 @app.command()
 def graph(trace: str = typer.Option(..., "--trace", help="Trace ID"),
-          api: Optional[str] = typer.Option(None, "--api", help="Exporter API base (if set uses /graph)"),
-          gateway: Optional[str] = typer.Option(None, "--gateway", help="Gateway base (if set fetches /v1/receipts/export)")):
+          api: str | None = typer.Option(None, "--api", help="Exporter API base (if set uses /graph)"),
+          gateway: str | None = typer.Option(None, "--gateway", help="Gateway base (if set fetches /v1/receipts/export)")):
     if api:
         data = _get(f"{api}/graph/{trace}")
         print(json.dumps(data, indent=2))
@@ -30,7 +37,7 @@ def graph(trace: str = typer.Option(..., "--trace", help="Trace ID"),
 @app.command()
 def validate(trace: str = typer.Option(..., "--trace"),
              gateway: str = typer.Option(..., "--gateway", help="Gateway base URL"),
-             api: Optional[str] = typer.Option(None, "--api", help="Exporter API (uses /validate)")):
+             api: str | None = typer.Option(None, "--api", help="Exporter API (uses /validate)")):
     if api:
         data = _get(f"{api}/validate/{trace}")
         print(json.dumps(data, indent=2))
@@ -49,7 +56,7 @@ def validate(trace: str = typer.Option(..., "--trace"),
 @app.command()
 def passport(trace: str = typer.Option(..., "--trace"),
              gateway: str = typer.Option(..., "--gateway"),
-             out: Optional[str] = typer.Option(None, "--out", help="Write to file")):
+             out: str | None = typer.Option(None, "--out", help="Write to file")):
     bundle = _get(f"{gateway}/v1/receipts/export/{trace}")
     graph = build_graph_from_bundle(bundle)
     passport_obj = to_passport(graph, bundle)

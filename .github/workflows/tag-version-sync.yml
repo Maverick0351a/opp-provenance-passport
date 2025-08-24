@@ -1,0 +1,48 @@
+name: tag-version-sync
+
+on:
+  push:
+    tags:
+      - 'opp-py-v*'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Derive version from tag
+        id: ver
+        run: |
+          ref="${GITHUB_REF##*/}"
+          ver=${ref#opp-py-v}
+          echo "version=$ver" >> $GITHUB_OUTPUT
+      - name: Update pyproject version if differs
+        run: |
+          file_ver=$(grep '^version = ' packages/opp_py/pyproject.toml | sed -E 's/version = "(.*)"/\1/')
+          if [ "$file_ver" != "${{ steps.ver.outputs.version }}" ]; then
+            sed -i "s/version = \"$file_ver\"/version = \"${{ steps.ver.outputs.version }}\"/" packages/opp_py/pyproject.toml
+            echo "updated=1" >> $GITHUB_ENV
+          else
+            echo "updated=0" >> $GITHUB_ENV
+          fi
+      - name: Append release to CHANGELOG if missing
+        run: |
+          if ! grep -q "[${{ steps.ver.outputs.version }}]" CHANGELOG.md; then
+            date=$(date +%Y-%m-%d)
+            awk -v ver="${{ steps.ver.outputs.version }}" -v date="$date" '/^## \[Unreleased\]/{print;print "\n## ["ver"] - "date"\n### Changed\n- Version sync.";next}1' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+            echo "chlog=1" >> $GITHUB_ENV
+          else
+            echo "chlog=0" >> $GITHUB_ENV
+          fi
+      - name: Commit changes
+        if: env.updated == '1' || env.chlog == '1'
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add packages/opp_py/pyproject.toml CHANGELOG.md
+          git commit -m "chore: sync version ${ { steps.ver.outputs.version } } from tag" || echo "No commit"
+          git push

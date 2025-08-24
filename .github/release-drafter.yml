@@ -1,0 +1,43 @@
+name-template: 'opp-py-v$NEXT_PATCH_VERSION'
+tag-template: 'opp-py-v$NEXT_PATCH_VERSION'
+categories:
+  - title: '🚀 Features'
+    labels: ['feat','feature']
+  - title: '🛠 Fixes'
+    labels: ['fix','bugfix','bug']
+  - title: '🧪 Tests'
+    labels: ['test']
+  - title: '📦 Build / CI'
+    labels: ['ci','build']
+  - title: '🧹 Chore'
+    labels: ['chore','refactor','docs']
+change-template: '- $TITLE (#$NUMBER)'
+template: |
+  ## Changes
+  $CHANGES
+
+  ## Contributors
+  $CONTRIBUTORS
+
+version-resolver:
+  major:
+    labels: ['major']
+  minor:
+    labels: ['feat','feature']
+  patch:
+    labels: ['fix','bugfix','chore','docs','test','ci','refactor']
+  default: patch
+
+autolabeler:
+  - label: 'feat'
+    title: ['feat:','feature:']
+  - label: 'fix'
+    title: ['fix:']
+  - label: 'docs'
+    title: ['docs:']
+  - label: 'chore'
+    title: ['chore:']
+  - label: 'test'
+    title: ['test:']
+  - label: 'ci'
+    title: ['ci:']

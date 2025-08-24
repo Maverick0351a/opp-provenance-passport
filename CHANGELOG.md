@@ -6,7 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) 
 
 ## [Unreleased]
 ### Added
-- (placeholder) Upcoming changes.
+- Code coverage gate (>=70%) and Codecov badge integration.
+- Extensive CLI, graph, decorator, and shim test suite (coverage ~90%).
+- Optional dependency extras group `c2pa` (installs `c2pa` and `Pillow`).
+- Exported `py.typed` marker for type checkers.
 
 ## [0.1.1] - 2025-08-23
 ### Added

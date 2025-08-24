@@ -36,7 +36,13 @@ Documentation = "https://github.com/Maverick0351a/opp-provenance-passport#readme
 include-package-data = true
 
 [tool.setuptools.package-data]
-"opp" = ["schemas/*.json"]
+"opp" = ["schemas/*.json", "py.typed"]
 
 [project.scripts]
 opp = "opp.cli:app"
+
+[project.optional-dependencies]
+c2pa = [
+  "c2pa>=0.5.0",  # version placeholder; adjust to actual minimal supported
+  "Pillow>=10.0.0"
+]

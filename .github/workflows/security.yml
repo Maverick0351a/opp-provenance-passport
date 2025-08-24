@@ -1,0 +1,42 @@
+name: security-scan
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  schedule:
+    - cron: '0 3 * * 1'  # weekly Monday 03:00 UTC
+  workflow_dispatch:
+
+jobs:
+  bandit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+            python-version: '3.11'
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install bandit
+      - name: Run Bandit (opp_py + exporter_api)
+        run: |
+          bandit -q -r packages/opp_py/opp services/exporter_api || (echo "Bandit issues found" && exit 1)
+
+  pip-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install project + pip-audit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit
+          pip install -e packages/opp_py
+          pip install -r services/exporter_api/requirements.txt
+      - name: Run pip-audit (fail on vulns)
+        run: |
+          pip-audit --progress-spinner=off --strict || (echo "Vulnerabilities found" && exit 1)

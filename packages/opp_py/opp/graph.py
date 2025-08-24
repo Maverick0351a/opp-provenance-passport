@@ -1,8 +1,11 @@
 from __future__ import annotations
-from typing import Dict, Any, List, Tuple, Optional
+
+from typing import Any
+
 from .merkle import merkle_root
 
-def _collect_dataset_roots(bundle: Dict[str, Any]) -> List[str]:
+
+def _collect_dataset_roots(bundle: dict[str, Any]) -> list[str]:
     datasets = []
     chain = bundle.get("chain") or bundle.get("hops") or []
     for r in chain:
@@ -20,7 +23,7 @@ def _collect_dataset_roots(bundle: Dict[str, Any]) -> List[str]:
                 datasets.append(merkle_root([cid.encode() for cid in roots]))
     return datasets
 
-def to_passport(graph: Dict[str, Any], bundle: Dict[str, Any]) -> Dict[str, Any]:
+def to_passport(graph: dict[str, Any], bundle: dict[str, Any]) -> dict[str, Any]:
     """Produce an auditor‑friendly passport summary.
 
     Extracts:
@@ -36,12 +39,12 @@ def to_passport(graph: Dict[str, Any], bundle: Dict[str, Any]) -> Dict[str, Any]
     steps = [r.get("normalized", {}).get("step") for r in chain if r.get("normalized", {}).get("step")]
     distinct_steps = sorted(set(steps))
     timestamps = [r.get("ts") for r in chain if r.get("ts")]
-    model_id: Optional[str] = None
-    metrics: Dict[str, Any] = {}
-    safety: Dict[str, bool] = {}
-    policy_engines: List[str] = []
-    policy_breaches: List[Dict[str, Any]] = []
-    policy_decisions: List[Dict[str, Any]] = []
+    model_id: str | None = None
+    metrics: dict[str, Any] = {}
+    safety: dict[str, bool] = {}
+    policy_engines: list[str] = []
+    policy_breaches: list[dict[str, Any]] = []
+    policy_decisions: list[dict[str, Any]] = []
     for r in chain:
         norm = r.get("normalized", {})
         if not model_id:
@@ -81,9 +84,9 @@ def to_passport(graph: Dict[str, Any], bundle: Dict[str, Any]) -> Dict[str, Any]
         "dataset_roots": dataset_roots,
         "metrics": metrics,
         "safety_flags": safety,
-    "policy_engines": policy_engines,
-    "policy_decisions": policy_decisions,
-    "policy_breaches": policy_breaches,
+        "policy_engines": policy_engines,
+        "policy_decisions": policy_decisions,
+        "policy_breaches": policy_breaches,
         "bundle_cid": bundle.get("bundle_cid") or bundle.get("cid"),
         "integrity": {
             "graph_nodes": len(graph.get("nodes", [])),
@@ -92,14 +95,15 @@ def to_passport(graph: Dict[str, Any], bundle: Dict[str, Any]) -> Dict[str, Any]
         "summary": f"Model {model_id or 'N/A'} with {len(distinct_steps)} steps and {len(dataset_roots)} dataset roots"
     }
 
-def build_graph_from_bundle(bundle: Dict[str, Any]) -> Dict[str, Any]:
+def build_graph_from_bundle(bundle: dict[str, Any]) -> dict[str, Any]:
     """Create a minimal provenance graph from an ODIN export bundle.
 
     Nodes: receipts (id = receipt_hash), Edges: prev->curr linkage.
     """
     chain = bundle.get("chain") or bundle.get("hops") or []
     nodes = []
-    edges = []
+    # Edge list annotated for mypy
+    edges: list[dict[str, str]] = []
     last = None
     for hop in chain:
         rid = hop.get("receipt_hash")

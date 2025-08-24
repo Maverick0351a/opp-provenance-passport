@@ -19,15 +19,17 @@ NOTE: This is a minimal helper and does not sign with a production key. For a
 real deployment, integrate a proper signing key and manifest store.
 """
 from __future__ import annotations
-from typing import Optional
+
+import importlib
 import os
+from typing import Any
 
 __all__ = ["embed_bundle_cid"]
 
 C2PA_NS = "dev.opp.bundle"
 
 
-def embed_bundle_cid(image_path: str, bundle_cid: str, out_path: Optional[str] = None) -> str:
+def embed_bundle_cid(image_path: str, bundle_cid: str, out_path: str | None = None) -> str:
     """Embed bundle CID into the image's C2PA manifest.
 
     Args:
@@ -39,9 +41,9 @@ def embed_bundle_cid(image_path: str, bundle_cid: str, out_path: Optional[str] =
         Output image path with embedded manifest.
     """
     try:
-        # c2pa python SDK pattern (hypothetical; adjust if actual API differs)
-        import c2pa  # type: ignore
-        from PIL import Image  # type: ignore
+        # Dynamically import optional deps so static type checkers do not require stubs
+        c2pa: Any = importlib.import_module("c2pa")
+        Image: Any = importlib.import_module("PIL.Image")
     except Exception as e:  # pragma: no cover - import guard
         raise RuntimeError(
             "C2PA embedding requires optional dependencies. Install with: pip install c2pa Pillow"
@@ -54,8 +56,8 @@ def embed_bundle_cid(image_path: str, bundle_cid: str, out_path: Optional[str] =
     out_path = out_path or f"{stem}.c2pa{ext}"
 
     # Load the image (this ensures format is recognized)
-    with Image.open(image_path) as img:
-        img_format = img.format
+    with Image.open(image_path):
+        pass  # open/close to validate format
 
     # Minimal manifest creation (pseudo-API; adapt to real c2pa lib)
     manifest = c2pa.Manifest()

@@ -1,0 +1,65 @@
+name: changelog-generate
+
+on:
+  push:
+    tags:
+      - 'opp-py-v*'
+  workflow_dispatch:
+
+jobs:
+  build-changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Derive version from tag
+        id: ver
+        run: |
+          ref="${GITHUB_REF##*/}"
+          ver=${ref#opp-py-v}
+          echo "version=$ver" >> $GITHUB_OUTPUT
+      - name: Sync pyproject version
+        run: |
+          file_ver=$(grep '^version = ' packages/opp_py/pyproject.toml | sed -E 's/version = "(.*)"/\1/')
+          if [ "$file_ver" != "${{ steps.ver.outputs.version }}" ]; then
+            sed -i "s/version = \"$file_ver\"/version = \"${{ steps.ver.outputs.version }}\"/" packages/opp_py/pyproject.toml
+            echo "ver_updated=1" >> $GITHUB_ENV
+          else
+            echo "ver_updated=0" >> $GITHUB_ENV
+          fi
+      - name: Install git-cliff
+        run: |
+          curl -sSL https://github.com/orhun/git-cliff/releases/download/v2.5.0/git-cliff-2.5.0-x86_64-unknown-linux-musl.tar.gz | tar -xz --strip-components=1 git-cliff-2.5.0-x86_64-unknown-linux-musl/git-cliff
+          sudo mv git-cliff /usr/local/bin/
+      - name: Generate release changelog section
+        id: cliff
+        run: |
+          TAG="${GITHUB_REF##*/}"
+          VERSION=${TAG#opp-py-v}
+          echo "Generating changelog for $TAG"
+          # Generate only for this tag range
+          PREV=$(git tag --list 'opp-py-v*' --sort=-v:refname | grep -A1 "$TAG" | tail -n1 || true)
+          if [ -n "$PREV" ]; then
+            RANGE="$PREV..$TAG"
+          else
+            RANGE="$TAG"
+          fi
+          git-cliff --config cliff.toml --tag "$TAG" $RANGE > NEW_CHANGELOG.md
+          # Merge into existing CHANGELOG if not already present
+          if ! grep -q "## \[$VERSION\]" CHANGELOG.md; then
+            awk 'NR==1{print;next} /^## \[Unreleased\]/{print;print "\n";system("cat NEW_CHANGELOG.md");next}1' CHANGELOG.md > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+            echo "updated=1" >> $GITHUB_OUTPUT
+          else
+            echo "updated=0" >> $GITHUB_OUTPUT
+          fi
+      - name: Commit changelog
+        if: steps.cliff.outputs.updated == '1' || env.ver_updated == '1'
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add CHANGELOG.md packages/opp_py/pyproject.toml || true
+          git commit -m "chore: release sync for ${GITHUB_REF##*/}" || true
+          git push

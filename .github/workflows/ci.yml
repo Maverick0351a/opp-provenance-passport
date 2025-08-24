@@ -15,9 +15,31 @@ jobs:
       - name: Install opp_py
         run: |
           python -m pip install --upgrade pip
-          pip install pytest
+          pip install pytest coverage mypy ruff
           pip install -e packages/opp_py
           pip install -r services/exporter_api/requirements.txt
+      - name: Lint (ruff)
+        run: |
+          ruff check packages/opp_py
+      - name: Type check (mypy)
+        run: |
+          mypy packages/opp_py/opp
       - name: Run tests
         run: |
-          python -m pytest -q
+          coverage run --rcfile=coverage.ini -m pytest -q
+      - name: Coverage report
+        run: |
+          coverage xml -o coverage.xml
+          coverage report -m --fail-under=90
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
+          path: coverage.xml
+      - name: Upload to Codecov
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false
+          verbose: false

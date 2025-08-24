@@ -1,0 +1,9 @@
+target-version = "py311"
+line-length = 100
+
+[lint]
+extend-select = ["I", "UP", "RUF100"]
+ignore = ["ANN101", "ANN102"]
+
+[lint.per-file-ignores]
+"tests/*" = ["S101"]

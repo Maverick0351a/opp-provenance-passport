@@ -1,9 +1,15 @@
 from __future__ import annotations
-import os, base64, json, hashlib, datetime
-from typing import Any, Dict, Optional
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-from cryptography.hazmat.primitives import serialization
+
+import base64
+import datetime
+import hashlib
+import json
+import os
+from typing import Any
+
 import httpx
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 __all__ = ["OPEClient"]
 
@@ -17,7 +23,7 @@ def _cid(obj: Any) -> str:
     return "sha256:" + hashlib.sha256(_canonical(obj)).hexdigest()
 
 def _utcnow_iso() -> str:
-    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+    return datetime.datetime.now(datetime.UTC).isoformat()
 
 class OPEClient:
     """Fallback OPEClient providing create_envelope() / send_envelope().
@@ -28,7 +34,7 @@ class OPEClient:
       - OPP_SENDER_KID / ODIN_SENDER_KID : key id (default 'opp-sender')
     send_envelope() will POST JSON to {gateway_url}/api/v1/envelopes if network reachable; otherwise it silently ignores errors.
     """
-    def __init__(self, gateway_url: Optional[str] = None, sender_priv_b64: Optional[str] = None, sender_kid: Optional[str] = None):
+    def __init__(self, gateway_url: str | None = None, sender_priv_b64: str | None = None, sender_kid: str | None = None):
         self.gateway_url = gateway_url or os.getenv("OPP_GATEWAY_URL") or os.getenv("ODIN_GATEWAY_URL") or "http://127.0.0.1:8080"
         self.sender_priv_b64 = sender_priv_b64 or os.getenv("ODIN_SENDER_PRIV_B64") or os.getenv("OPP_SENDER_PRIV_B64")
         if not self.sender_priv_b64:
@@ -41,11 +47,11 @@ class OPEClient:
         self._pub = self._priv.public_key().public_bytes(encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw)
         self._pub_b64u = _b64u(self._pub)
 
-    def create_envelope(self, payload: Dict[str, Any], payload_type: str, target_type: str, trace_id: Optional[str] = None, ts: Optional[str] = None) -> Dict[str, Any]:
+    def create_envelope(self, payload: dict[str, Any], payload_type: str, target_type: str, trace_id: str | None = None, ts: str | None = None) -> dict[str, Any]:
         trace_id = trace_id or os.getenv("OPP_TRACE_ID") or os.getenv("ODIN_TRACE_ID") or "opp-trace"
         ts = ts or _utcnow_iso()
         cid = _cid(payload)
-        msg = f"{cid}|{trace_id}|{ts}".encode("utf-8")
+        msg = f"{cid}|{trace_id}|{ts}".encode()
         sig = self._priv.sign(msg)
         return {
             "trace_id": trace_id,
@@ -58,7 +64,7 @@ class OPEClient:
             "signature": _b64u(sig),
         }
 
-    def send_envelope(self, env: Dict[str, Any]):  # best-effort POST
+    def send_envelope(self, env: dict[str, Any]):  # best-effort POST
         url = self.gateway_url.rstrip("/") + "/api/v1/envelopes"
         try:
             with httpx.Client(timeout=2.0) as c:
