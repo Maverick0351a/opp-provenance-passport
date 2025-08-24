@@ -3,5 +3,7 @@ uvicorn==0.30.1
 httpx==0.27.0
 cryptography==43.0.1
 pydantic==2.8.2
-starlette>=0.47.2
+# Align Starlette to FastAPI 0.111.0 supported range (>=0.37.2,<0.38.0). NOTE: 0.37.2 had advisories; plan upgrade FastAPI
+# to a version supporting a patched Starlette (>=0.47.2) in a follow-up security hardening PR.
+starlette==0.37.2
 setuptools>=78.1.1
