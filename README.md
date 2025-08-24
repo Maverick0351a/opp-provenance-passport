@@ -3,6 +3,7 @@
 [![opp-ci](https://github.com/Maverick0351a/opp-provenance-passport/actions/workflows/ci.yml/badge.svg)](https://github.com/Maverick0351a/opp-provenance-passport/actions)
 [![google-partner](https://img.shields.io/badge/Google%20Cloud-Partner-blue?logo=googlecloud&logoColor=white)](https://cloud.google.com/partners)
 [![release](https://img.shields.io/github/v/release/Maverick0351a/opp-provenance-passport)](https://github.com/Maverick0351a/opp-provenance-passport/releases)
+[![PyPI version](https://img.shields.io/pypi/v/opp-py)](https://pypi.org/project/opp-py/)
 
 **One‑liner:** Turnkey provenance + policy layer that stamps & validates **datasets, prompts, model builds, and agent/tool runs** with chained, signed ODIN OPE receipts, then elevates them into a human + machine readable Model Passport & Policy view.
 
