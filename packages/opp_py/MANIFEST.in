@@ -1,0 +1,2 @@
+recursive-include opp/schemas *.json
+include README.md
