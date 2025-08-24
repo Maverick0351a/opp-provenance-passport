@@ -1,0 +1,24 @@
+# git-cliff configuration
+[changelog]
+header = "# Changelog\n\nAll notable changes to this project will be documented in this file.\n\n"
+body = "{{#each groups}}{{#if commits}}\n## {{heading}}\n{{#each commits}}- {{#if scope}}**{{scope}}:** {{/if}}{{message}}{{/each}}{{/if}}{{/each}}\n"
+trim = true
+footer = "\n"
+
+[commit]
+conventional = true
+filter_unconventional = true
+group_by = "type"
+groups = [
+  { title = "### Added", types = ["feat"] },
+  { title = "### Fixed", types = ["fix"] },
+  { title = "### Changed", types = ["refactor","perf","build","ci","chore"] },
+  { title = "### Documentation", types = ["docs"] },
+  { title = "### Tests", types = ["test"] }
+]
+split_commits = false
+
+[git]
+tag_pattern = "opp-py-v[0-9]*.[0-9]*.[0-9]*"
+topo_order = false
+sort_commits = "newest"

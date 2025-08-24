@@ -1,0 +1,21 @@
+name: commitlint
+on:
+  pull_request:
+    types: [opened, synchronize, edited, reopened]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install commitlint
+        run: |
+          npm install --no-save @commitlint/config-conventional @commitlint/cli
+      - name: Lint commits in PR range
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          npx commitlint --from $BASE_SHA --to $HEAD_SHA --verbose

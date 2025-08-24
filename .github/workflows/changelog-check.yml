@@ -1,0 +1,27 @@
+name: changelog-check
+on:
+  pull_request:
+    paths:
+      - 'packages/opp_py/pyproject.toml'
+      - 'CHANGELOG.md'
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract version from pyproject
+        id: ver
+        run: |
+          v=$(grep '^version = ' packages/opp_py/pyproject.toml | sed -E 's/version = "([0-9]+\.[0-9]+\.[0-9]+)"/\1/')
+          echo "version=$v" >> $GITHUB_OUTPUT
+      - name: Ensure version present in CHANGELOG
+        run: |
+          if ! grep -q "\[${{ steps.ver.outputs.version }}\]" CHANGELOG.md; then
+            echo "CHANGELOG.md missing entry for version ${{ steps.ver.outputs.version }}" >&2
+            exit 1
+          fi
+      - name: Basic Keep a Changelog headers
+        run: |
+          grep -q '## \[Unreleased\]' CHANGELOG.md || (echo 'Missing Unreleased section' >&2; exit 1)
+      - name: Summary
+        run: echo "CHANGELOG contains version ${{ steps.ver.outputs.version }}" >> $GITHUB_STEP_SUMMARY
