@@ -1,7 +1,7 @@
 fastapi==0.115.5
 uvicorn==0.30.1
 httpx==0.27.0
-cryptography==44.0.1
+cryptography==45.0.6
 pydantic==2.8.2
 # FastAPI 0.115.x supports newer Starlette; use patched Starlette version.
 starlette==0.41.2
